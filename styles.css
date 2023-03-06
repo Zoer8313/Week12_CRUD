@@ -1,0 +1,18 @@
+.announcement {
+    background-color: tomato;
+    color: black;
+    border: 2px solid black;
+    margin: 60px;
+    padding: 60px;
+    text-align: center;
+    border-radius: 12px;
+  }
+
+  button {
+    border-radius: 12px;
+  }
+
+  h2 {
+    text-align: center;
+  }
+
