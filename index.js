@@ -182,5 +182,7 @@ DOMManager.getAllEvents();
   -can delete events, but can't delete volunteers. I have been trying for hours
   to come up with a way to attatch an id to each volunteer, but none of
   them have worked. I've screwed around with how my data is presented in my
-  mock API, 
+  mock API, tried adding a counter to my volunteer class, idk
+  -I'm pretty sure there's something wrong in my ajax requests, going over 
+  those would be helpful.
 */
