@@ -22,13 +22,12 @@ class Event {
     this.volunteers = [];
   }
 
-  addVolunteer(name, phoneNumber) {
-    this.volunteers.push(new Volunteer(name, phoneNumber));
+  addVolunteer(name, phoneNumber, id) {
+    this.volunteers.push(new Volunteer(name, phoneNumber, id));
   }
 }
 
 class Volunteer {
-
   constructor(name, phoneNumber, id) {
     this.name = name;
     this.phoneNumber = phoneNumber;
@@ -36,107 +35,128 @@ class Volunteer {
   }
 }
 
+class EventService {
+  //can maybe rename later
 
-class EventService {//can maybe rename later
+  static url = "https://6400eca4ab6b7399d09df8ab.mockapi.io/events/eventList"; //what is static??
 
-  static url = "https://6400eca4ab6b7399d09df8ab.mockapi.io/events/eventList";//what is static??
+  static getAllEvents() {
+    //no parameters- just returns all events
+    return $.get(this.url); //return all events from this url
+  }
 
-    static getAllEvents() {//no parameters- just returns all events
-      return $.get(this.url);//return all events from this url
-    }
+  static getEvent(id) {
+    //id of specific event we want to retrive from API
+    return $.get(this.url + `/${id}`);
+  }
 
-    static getEvent(id) {//id of specific event we want to retrive from API
-      return $.get(this.url + `/${id}`);
-    }
+  static createEvent(event) {
+    //takes an instance of event class-name & array
+    return $.post(this.url, event); //adding (posting) event payload to API
+  } //returning all so when we use these methods, we can handle promise that
+  //comes back.
 
-    static createEvent(event) {//takes an instance of event class-name & array
-      return $.post(this.url, event);//adding (posting) event payload to API
-    }//returning all so when we use these methods, we can handle promise that
-    //comes back.
+  static updateEvent(event) {
+    //no idea what's happening here lol
+    return $.ajax({
+      //object
+      url: this.url + `/${event.id}`,
+      dataType: "json",
+      data: JSON.stringify(event),
+      contentType: "application/json",
+      type: "PUT", //http verb
+    });
+  }
 
-    static updateEvent(event) {//no idea what's happening here lol
-      return $.ajax({//object
-        url: this.url + `/${event.id}`,
-        dataType: "json",
-        data: JSON.stringify(event),
-        contentType: "application/json",
-        type: "PUT"//http verb
-      });
-    }
-
-    static deleteEvent(id) {//this id we want to delete.
-      return $.ajax({
-        url: this.url + `/${id}`,
-        type: "DELETE"//http verb
-      });
-    }
+  static deleteEvent(id) {
+    //this id we want to delete.
+    return $.ajax({
+      url: this.url + `/${id}`,
+      type: "DELETE", //http verb
+    });
+  }
 }
 
 class DOMManager {
-    static events;//"events" to represent all events in this class
+  static events; //"events" to represent all events in this class
 
-    static getAllEvents() {//calls getAllEvents() in EventService
-      EventService.getAllEvents().then(events => this.render(events));//getAllEvents() returns a promise, so add the .then for it
-    }
-    
-    static deleteEvent(id) {
-      EventService.deleteEvent(id)
+  static getAllEvents() {
+    //calls getAllEvents() in EventService
+    EventService.getAllEvents().then((events) => this.render(events)); //getAllEvents() returns a promise, so add the .then for it
+  }
+
+  static deleteEvent(id) {
+    EventService.deleteEvent(id)
       .then(() => {
         return EventService.getAllEvents();
       })
       .then((events) => this.render(events));
-    }
+  }
 
-    static createEvent(headliner) {
-      EventService.createEvent(new Event(headliner))
+  static createEvent(headliner) {
+    EventService.createEvent(new Event(headliner))
       .then(() => {
         return EventService.getAllEvents();
       })
       .then((events) => this.render(events));
-    }
+  }
 
-    static addVolunteer(id) {
-      for (let event of this.events) {
-        if (event.id == id) {
-          event.volunteers.push(new Volunteer($(`#${event.id}-volunteer-name`).val(), $(`#${event.id}-volunteer-phone-number`).val()));
-          EventService.updateEvent(event)
+  static addVolunteer(id) {
+    let i = 0;
+    //console.log(i);
+    for (let event of this.events) {
+      //console.log(event);
+      if (event.id == id) {
+        event.volunteers.push(
+          new Volunteer(
+            $(`#${event.id}-volunteer-name`).val(),
+            $(`#${event.id}-volunteer-phone-number`).val(),
+            $(`#${i++}-volunteer-id`).val(),
+          )
+        );
+        console.log(i);
+        EventService.updateEvent(event)
           .then(() => {
             return EventService.getAllEvents();
           })
           .then((events) => this.render(events));
-        }
       }
     }
+    //console.log(this.events);
+  }
 
-    static deleteVolunteer(eventId, volunteerId) {
-      for (let event of this.events) {
-        if (event.id == eventId) {
-          for (let volunteer of event.volunteers) {
-            console.log(event.volunteers); //-does this as many X as there are volunteers
-            if (volunteer.id == volunteerId) {
-              event.volunteers.splice(event.volunteers.indexOf(volunteer), 1);
-              EventService.updateEvent(event)
+  static deleteVolunteer(eventId, volunteerId) {
+    for (let event of this.events) {
+      if (event.id == eventId) {
+        //console.log(eventId, event.id);
+        for (let volunteer of event.volunteers) {
+          console.log(event.volunteers); //maybe put loop in here?
+
+          if (volunteer.id == volunteerId) {
+            //console.log(volunteer.id, volunteerId);
+            event.volunteers.splice(event.volunteers.indexOf(volunteer), 1);
+            EventService.updateEvent(event)
               .then(() => {
                 return EventService.getAllEvents();
               })
               .then((events) => this.render(events));
-            }
           }
         }
       }
-      
-   }
+    }
+  }
 
-    static render(events) {
-      this.events = events;
-      //console.log(events);
-      $("#app").empty();
-      for (let event of events) {
-        //console.log(event);
-        $("#app").prepend(//had event.headliner on line 135, which didnt exist.
-          `<div id = "${event.id}" class = "card">
+  static render(events) {
+    this.events = events;
+    //console.log(events);
+    $("#app").empty();
+    for (let event of events) {
+      //console.log(event);
+      $("#app").prepend(
+        //had event.headliner on line 135, which didnt exist.
+        `<div id = "${event.id}" class = "card">
           <div class = "card-header">
-          <h2>${event.event}</h2>
+          <h2>${event.headliner}</h2>
           <button class = "btn btn-danger" onclick = "DOMManager.deleteEvent('${event.id}')">Delete</button>
           </div>
           <div class = "card-body">
@@ -153,21 +173,23 @@ class DOMManager {
           </div>
           </div>
           </div><br>`
-        );
+      );
 
-        for (let volunteer of event.volunteers) {//issue here. my volunteers dont have id's
-          $(`#${event.id}`).find(".card-body").append(
+      for (let volunteer of event.volunteers) {
+        //issue here. my volunteers dont have id's. this "event" refers to the one we're looking at in that moment
+        $(`#${event.id}`)
+          .find(".card-body")
+          .append(
             `<p>
             <span id = "volunteer-name-${volunteer.id}">Volunteer Name: ${volunteer.name}</span>
             <span id = "volunteer-phone-number-${volunteer.id}">Volunteer Phone Number: ${volunteer.phoneNumber}</span>
             <button class = "btn btn-danger" onclick = "DOMManager.deleteVolunteer('${event.id}', '${volunteer.id}')">Remove Volunteer</button></p>
             `
           );
-        }
       }
     }
-
-}//dommanager
+  }
+} //dommanager
 
 $("#create-new-event").click(() => {
   DOMManager.createEvent($("#new-event-name").val());
