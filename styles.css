@@ -1,6 +1,11 @@
 body {
   background-image: url("woodstock.jpg");
   background-attachment: fixed; /*keeps from scrolling*/
+  height: 100%;/*4-7 fullscreen*/
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  text-align: center;
 }
 
 .announcement {
@@ -23,4 +28,10 @@ body {
 
 .card-header {
   background-color: tomato;
+}
+
+.card {
+  background-color:cornflowerblue;
+  border: solid black;
+  border-radius: 12px;
 }

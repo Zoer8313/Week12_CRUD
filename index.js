@@ -28,10 +28,11 @@ class Event {
 }
 
 class Volunteer {
+  static count = 0;//give each volunteer an id. s.o. Kristina
   constructor(name, phoneNumber, id) {
     this.name = name;
     this.phoneNumber = phoneNumber;
-    this.id = id;
+    this.id = Volunteer.count++;
   }
 }
 
@@ -102,7 +103,6 @@ class DOMManager {
   }
 
   static addVolunteer(id) {
-    let i = 0;
     //console.log(i);
     for (let event of this.events) {
       //console.log(event);
@@ -111,10 +111,8 @@ class DOMManager {
           new Volunteer(
             $(`#${event.id}-volunteer-name`).val(),
             $(`#${event.id}-volunteer-phone-number`).val(),
-            $(`#${i++}-volunteer-id`).val(),
           )
         );
-        console.log(i);
         EventService.updateEvent(event)
           .then(() => {
             return EventService.getAllEvents();
@@ -156,7 +154,7 @@ class DOMManager {
         //had event.headliner on line 135, which didnt exist.
         `<div id = "${event.id}" class = "card">
           <div class = "card-header">
-          <h2>${event.headliner}</h2>
+          <h2><b>${event.headliner}</b></h2>
           <button class = "btn btn-danger" onclick = "DOMManager.deleteEvent('${event.id}')">Delete</button>
           </div>
           <div class = "card-body">
@@ -169,7 +167,7 @@ class DOMManager {
           <input type = "text" id = "${event.id}-volunteer-phone-number" class = "form-control" placeholder = "Volunteer Phone Number">
           </div>
           </div>
-          <button id = "${event.id}-new-volunteer" onclick = "DOMManager.addVolunteer('${event.id}')" class = "btn btn-primary form-control">Add</button>
+          <button id = "${event.id}-new-volunteer" onclick = "DOMManager.addVolunteer('${event.id}')" class = "btn btn-dark form-control">Add</button>
           </div>
           </div>
           </div><br>`
@@ -181,8 +179,8 @@ class DOMManager {
           .find(".card-body")
           .append(
             `<p>
-            <span id = "volunteer-name-${volunteer.id}">Volunteer Name: ${volunteer.name}</span>
-            <span id = "volunteer-phone-number-${volunteer.id}">Volunteer Phone Number: ${volunteer.phoneNumber}</span>
+            <span id = "volunteer-name-${volunteer.id}"><b>Volunteer Name: </b>${volunteer.name}</span>
+            <span id = "volunteer-phone-number-${volunteer.id}"><b>Volunteer Phone Number: </b>${volunteer.phoneNumber}</span>
             <button class = "btn btn-danger" onclick = "DOMManager.deleteVolunteer('${event.id}', '${volunteer.id}')">Remove Volunteer</button></p>
             `
           );
@@ -193,18 +191,8 @@ class DOMManager {
 
 $("#create-new-event").click(() => {
   DOMManager.createEvent($("#new-event-name").val());
-  $("new-event-name").val("");
+  document.getElementById("new-event-name").value = "";//jquery didnt work for this one?
 });
 
 DOMManager.getAllEvents();
 
-/*issues include:
-  -event name doesn't submit as what i input- calls it "event1" "event2"
-  and so on.
-  -can delete events, but can't delete volunteers. I have been trying for hours
-  to come up with a way to attatch an id to each volunteer, but none of
-  them have worked. I've screwed around with how my data is presented in my
-  mock API, tried adding a counter to my volunteer class, idk
-  -I'm pretty sure there's something wrong in my ajax requests, going over 
-  those would be helpful.
-*/
